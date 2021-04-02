@@ -17,7 +17,23 @@ res.render('contact', { title: 'CCI-A platform for sharing code' });
 })
 .post(function(req, res, next)
 {
-	res.render('thank', { title: 'CCI-A platform for sharing code' });
+  req.checkBody('name','Empty name').notEmpty();
+  req.checkBody('email','Invalid mail').isEmail();
+  req.checkBody('message','Empty message').notEmpty();
+
+  var errors = req.validationErrors();
+  if(errors){
+    res.render('contact',{
+      title: 'CCI-A platform for sharing code',
+      name: req.body.name,
+      email: req.body.email,
+      message: req.body.message,
+      errorMessages: errors
+    });
+  }
+  else{
+    res.render('thank', { title: 'CCI-A platform for sharing code' });
+  }
 });
 
 
