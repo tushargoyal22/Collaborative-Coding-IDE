@@ -45,13 +45,10 @@ res.render('contact', { title: 'CCI-A platform for sharing code' });
     };
 
     transporter.sendMail(mailOptions,function(error,info){
-
       if(error){
         return console.log(error);
       }
-
       res.render('thank', { title: 'CCI-A platform for sharing code' });
-
     });
 
   }

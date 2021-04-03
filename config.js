@@ -2,10 +2,11 @@
 
 module.exports = {
     mailer: {
-        services: 'Gmail',
+        service: 'gmail.com',
         auth:{
-            user: '',
-            pass: ''
+            user: 'myid@gmail.com',
+            pass: 'mypassword'
         }
-    }
+    }, 
+    dbConnstring: 'mongodb://127.0.0.1:27017/codeshare'
 }
