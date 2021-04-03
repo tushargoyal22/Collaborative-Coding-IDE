@@ -25,8 +25,7 @@ userSchema.methods.setPassword = function(password){
 };
 
 userSchema.methods.validPassword = function(password){
-    this.salt = crypto.randomBytes(16).toString('hex');
-    this.hash = crypto.pbkdf2Sync(password,this.salt,1000,64,'sha1').toString('hex');
+    hash = crypto.pbkdf2Sync(password,this.salt,1000,64,'sha1').toString('hex');
     return this.hash === hash;
 };
 
