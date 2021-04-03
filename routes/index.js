@@ -57,5 +57,13 @@ res.render('contact', { title: 'CCI-A platform for sharing code' });
   }
 });
 
+router.get('/login', function(req, res, next) {
+  res.render('login', { title: 'Login you acc' });
+});
+
+router.get('/register', function(req, res, next) {
+  res.render('register', { title: 'Register your acc' });
+});
+
 
 module.exports = router;
