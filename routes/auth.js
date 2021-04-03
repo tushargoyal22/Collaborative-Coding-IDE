@@ -4,9 +4,19 @@ var passport = require('passport');
 const user = require('../models/user');
 
 
-router.get('/login', function(req, res, next) {
+router.get('/login') 
+    .get(function(req,res,next){
     res.render('login', { title: 'Login your acc' });
-  });
+  })
+   // .post(passport.authenticate('local',{
+   //     failureRedirect:'/login'
+   // }),function(req,res){
+   //     res.redirect('/');
+   // });
+   .post('/login',
+  passport.authenticate('local', { successRedirect: '/',
+                                   failureRedirect: '/login' }));
+
   
 router.route('/register')  
 .get(function(req, res, next) 
