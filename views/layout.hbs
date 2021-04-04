@@ -30,9 +30,18 @@
         </li>
       
       </ul>
-        <ul class="navbar-nav ms-auto">
+        <ul class="nav  ms-auto">
           {{#if user}}
-            <li><a href="#">{{user.name}}</a></li>
+
+            
+  <li class="nav-item dropdown">
+    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown"  role="button" aria-expanded="false">{{user.name}}</a>
+    <ul class="dropdown-menu">
+      <li><a class="dropdown-item" href="/logout">Log Out</a></li>
+     
+    </ul>
+  </li>
+
           {{else}}
         <li class="nav-item">
           <a class="nav-link " aria-current="page" href="/login">Login</a>

@@ -1,5 +1,6 @@
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var FacebookStrategy=require('passport-facebook').Strategy;
 
 
 passport.serializeUser(function(user,done){
@@ -38,3 +39,40 @@ function(username,password,done){
 }
 
 ));
+
+passport.use(new FacebookStrategy({
+    clientID: '177651367528702',
+    clientSecret: 'e885b2e7df20582ec8fea456384aacac',
+    callbackURL: 'http://localhost:3000/auth/facebook/callback',
+    profileFields: ['id','displayName','email']
+    },
+    function(token,refreshToken,profile,done){
+        User.findOne({'facebookId':profile.id},function(err,user){
+            if(err) return done(err);
+
+            if(user){
+                return done(null,user);
+            }else{
+                User.findOne({email:profile.emails[0].value},function(err,user){
+                    if(user){
+                        user.facebookId=profile.id
+                        return user.save(function(err){
+                            if(err) return done(null,false,{message: "Cant save user info"});
+                                return done(null,user);
+                        })
+                    }
+        var user=new User();
+        user.name=profile.displayName;
+        user.email=profile.emails[0].value;
+        user.facebookId=profile.id
+        user.save(function(err){
+            if(err) return done(null,false,{message:"cant  see user info"});
+            return done(null,user);
+        });
+    })
+            }
+        });
+    }
+    
+
+    ));

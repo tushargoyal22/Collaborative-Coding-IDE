@@ -15,7 +15,8 @@ var userSchema = new mongoose.Schema({
     },
 
     hash: String,
-    salt:String
+    salt:String,
+    facebookId:String
 
 }); 
 
