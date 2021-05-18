@@ -2,98 +2,115 @@
 <br>
 
 <div>
-    <div class="row">
-        <div class="col-md-8">
-            <form action="" method="post">
-                <select id="prog-lang" name="lang">
-                    <option value="C++">C++</option>
-                    <option value="Python">Python</option>
-                    <option value="C">C</option>
-                </select>
-                <textarea id="code-screen" name="code"></textarea>
-                <br>Input:
-                <br>
-                <textarea id="input-text" name="input"></textarea>
-                <br>
-                <input type="submit" value="Run">
-            </form>
+  <div class="row">
+    <div class="col-md-8">
+      <form action="" method="post">
+        <select id="prog-lang" name="lang">
+          <option value="C++">C++</option>
+          <option value="Python">Python</option>
+          <option value="C">C</option>
+        </select>
+        <textarea id="code-screen" name="code"></textarea>
+        <br>Input:
+        <br>
+        <textarea id="input-text" name="input"></textarea>
+        <br>
+        <input type="submit" value="Run"> </form>
+    </div>
+    <div class="col-md-4" id="chatbox"> {{!-- Video Call --}}
+      <div class="panel panel-primary">
+        <div id="video-container">
+          <video autoplay id="second-video"></video>
+          <video autoplay id="my-video" muted="true"></video>
+          <div id="step2">
+            <p>Your ID: <span id="my-id">...</span></p>
+            <div class="form-inline">
+              <input type="text" class="form-control" placeholder="Call User ID..." id="callto-id"> <a href="#" class="btn btn-sm btn-success" id="make-call">Call</a> </div>
+          </div>
+          <div id="step3">
+            <p>Talk to <span id="second-id">...</span> <a href="#" class="btn btn-sm btn-danger" id="end-call">End call</a> </p>
+          </div>
         </div>
-        <div class="col-md-4" id="chatbox">
-            <div class="card">
-                <div class="card-header">CHAT ROOM <span class="float-end" id="chatbox-username">
+      </div>
+      <div class="card">
+        <div class="card-header">CHAT ROOM <span class="float-end" id="chatbox-username">
                     {{#if user}}
                     {{user.name}}
                     {{/if}}
 
-                </span>
-                </div>
-                
-                <div class="card-body" style="height: 200px">
-                    <br>
-                    <br>
-
-                    <ul class="list-group" style="height: 200px; overflow-y: scroll" id="chatbox-listMessages"></ul>
-                </div>
-                <div class="card-footer" style="height: 150px">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Enter message" id="userMessage" /> <span class="input-group-btn">
-                        <button type="button" class="btn btn primary" onclick="sendMessage()">SEND</button>
-                    </span>
-                    </div>
-                </div>
-            </div>
+                </span> </div>
+        <div class="card-body" style="height: 200px">
+          <br>
+          <br>
+          <ul class="list-group" style="height: 200px; overflow-y: scroll" id="chatbox-listMessages"></ul>
         </div>
+        <div class="card-footer" style="height: 150px">
+          <div class="input-group">
+            <input type="text" class="form-control" placeholder="Enter message" id="userMessage" /> <span class="input-group-btn">
+                        <button type="button" class="btn btn primary" onclick="sendMessage()">SEND</button>
+                    </span> </div>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
+<input type="hidden" value="{{roomId}}" id="roomId"/>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/mode/javascript/javascript.min.js"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.0/codemirror.min.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.0/mode/javascript/javascript.min.js"></script>
-
+<script src="/plugins/ot/ot.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
-    var socket=io.connect('http://localhost:3000');
-    var editor = CodeMirror.fromTextArea(
-        document.getElementById("code-screen"),{
-            lineNumbers: true,
-            theme: "monokai"
-        }
+  var EditorClient = ot.EditorClient;
+  var SocketIOAdapter = ot.SocketIOAdapter;
+  var CodeMirrorAdapter = ot.CodeMirrorAdapter;
+
+  var socket = io.connect('http://localhost:3000');
+  var editor = CodeMirror.fromTextArea(document.getElementById("code-screen"), {
+    lineNumbers: true,
+    theme: "monokai"
+  });
+
+  var cmClient;
+  function init(str, revision, clients, serverAdapter) {
+    editor.setValue(str);
+    cmClient = window.cmClient = new EditorClient(
+      revision, clients, serverAdapter, new CodeMirrorAdapter(editor)
     );
-    //https://www.pngkey.com/png/detail/114-1149847_avatar-unknown-dp.png
-    var username=$("#chatbox-username").val();
-    console.log(username+4);
-    if(username==="")
-        {
-            var userId=Math.floor(Math.random()*9999).toString();
-            username="User"+userId;
-            $("#chatbox-username").text(username);
-        };
-    var userMessage=function(name,text){
-        return ('<li class="media"> <div class="media-body"> <div class="media">'+
-            '<div class="media-body"/>'+
-            '<b>'+name+'</b> : '+text+
-            '<hr/></div></div></div></li>'
-            );
-    };
+  };
 
-    var sendMessage=function(){
-        var userMessage=$('#userMessage').val();
-        console.log(userMessage);
-        socket.emit('chatMessage',{message:userMessage,username:username});
-        $('#userMessage').val("");
-    };
+  socket.on('doc', function(obj) {
+    init(obj.str, obj.revision, obj.clients, new SocketIOAdapter(socket));
+  });
 
-    socket.on('chatMessage',function(data){
-       $('#chatbox-listMessages').append(userMessage(data.username,data.message)); 
-    });
+  var username = $("#chatbox-username").val();
+  if(username === "") {
+    var userId = Math.floor(Math.random() * 9999).toString();
+    username = "User" + userId;
+    $("#chatbox-username").text(username);
+  };
+
+  var roomId = $('#roomId').val();
+  socket.emit('joinRoom', {room: roomId, username: username});
+
+  var userMessage = function(name, text) {
+    return ('<li class="media"> <div class="media-body"> <div class="media">' +
+      '<div class="media-body"' +
+      '<b>' + name + '</b> : ' + text +
+      '<hr/> </div></div></div></li>'
+    );
+  };
+
+  var sendMessage = function() {
+    var userMessage = $('#userMessage').val();
+    socket.emit('chatMessage', {message: userMessage, username: username});
+    $('#userMessage').val("");
+  };
+
+  socket.on('chatMessage', function(data) {
+    $('#chatbox-listMessages').append(userMessage(data.username, data.message));
+  });
 
 </script>
-
-
-
-
-
-
-</div>
