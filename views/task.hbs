@@ -3,35 +3,95 @@
 
 <div>
     <div class="row">
-        <div>
+        <div class="col-md-8">
             <form action="" method="post">
                 <select id="prog-lang" name="lang">
                     <option value="C++">C++</option>
                     <option value="Python">Python</option>
                     <option value="C">C</option>
                 </select>
-                <textarea id="code-screen" name="code"> </textarea>
-                <br>Input:<br>
+                <textarea id="code-screen" name="code"></textarea>
+                <br>Input:
+                <br>
                 <textarea id="input-text" name="input"></textarea>
-                <br><input type="submit" value="Run">
+                <br>
+                <input type="submit" value="Run">
             </form>
-            
+        </div>
+        <div class="col-md-4" id="chatbox">
+            <div class="card">
+                <div class="card-header">CHAT ROOM <span class="float-end" id="chatbox-username">
+                    {{#if user}}
+                    {{user.name}}
+                    {{/if}}
 
+                </span>
+                </div>
+                
+                <div class="card-body" style="height: 200px">
+                    <br>
+                    <br>
 
+                    <ul class="list-group" style="height: 200px; overflow-y: scroll" id="chatbox-listMessages"></ul>
+                </div>
+                <div class="card-footer" style="height: 150px">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Enter message" id="userMessage" /> <span class="input-group-btn">
+                        <button type="button" class="btn btn primary" onclick="sendMessage()">SEND</button>
+                    </span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.60.0/mode/javascript/javascript.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.0/codemirror.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.61.0/mode/javascript/javascript.min.js"></script>
+
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
+    var socket=io.connect('http://localhost:3000');
     var editor = CodeMirror.fromTextArea(
         document.getElementById("code-screen"),{
             lineNumbers: true,
             theme: "monokai"
         }
     );
+    //https://www.pngkey.com/png/detail/114-1149847_avatar-unknown-dp.png
+    var username=$("#chatbox-username").val();
+    console.log(username+4);
+    if(username==="")
+        {
+            var userId=Math.floor(Math.random()*9999).toString();
+            username="User"+userId;
+            $("#chatbox-username").text(username);
+        };
+    var userMessage=function(name,text){
+        return ('<li class="media"> <div class="media-body"> <div class="media">'+
+            '<div class="media-body"/>'+
+            '<b>'+name+'</b> : '+text+
+            '<hr/></div></div></div></li>'
+            );
+    };
+
+    var sendMessage=function(){
+        var userMessage=$('#userMessage').val();
+        console.log(userMessage);
+        socket.emit('chatMessage',{message:userMessage,username:username});
+        $('#userMessage').val("");
+    };
+
+    socket.on('chatMessage',function(data){
+       $('#chatbox-listMessages').append(userMessage(data.username,data.message)); 
+    });
+
 </script>
+
+
 
 
 
