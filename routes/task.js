@@ -71,6 +71,7 @@ router.post('/task/:id', function(req,res){
                             output = stdout;
                             console.log(output);
                             fs.rmdirSync(codedir, { recursive: true });
+                            res.render("task", { output: output });
                         });
                     });
                 });           
@@ -91,6 +92,7 @@ router.post('/task/:id', function(req,res){
                             output = stdout;
                             console.log(output);
                             fs.rmdirSync(codedir, { recursive: true });
+                            res.render("task", { output: output });
                         });
                     });
                 });
@@ -105,13 +107,12 @@ router.post('/task/:id', function(req,res){
                         output = stdout;
                         console.log(output);
                         fs.rmdirSync(codedir, { recursive: true });
+                        res.render("task", { output: output });
                     });
                 });
             }
         });
     });
-
-    res.render("task");
 })
 
 

@@ -1,5 +1,4 @@
 <br>
-<br>
 
 <div>
   <div class="row">
@@ -10,13 +9,30 @@
           <option value="Python">Python</option>
           <option value="C">C</option>
         </select>
-        <textarea id="code-screen" name="code"></textarea>
-        <br>Input:
+        
+        <textarea id="code-screen" name="code">
+          
+        </textarea>
         <br>
-        <textarea id="input-text" name="input"></textarea>
+        
+        <div class="row">
+          <div class="col">
+            Input:
+            <br>
+            <textarea id="input-text" style="resize:none" rows="4" cols="59" name="input"></textarea>
+          </div>
+          <div class="col">
+            Output:
+            <br>
+            <textarea id="output-text" style="resize:none" rows="4" cols="59" name="output">{{#if output}}{{output}}{{/if}}</textarea>
+          </div>
+        </div>
         <br>
+        
         <input type="submit" value="Run"> </form>
+    
     </div>
+
     <div class="col-md-4" id="chatbox"> {{!-- Video Call --}}
       <div class="panel panel-primary">
         <div id="video-container">

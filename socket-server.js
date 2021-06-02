@@ -5,8 +5,7 @@ var ot = require('ot');
 var roomList = {};
 
 module.exports = function(server) {
-  var str = 'This is a Markdown heading \n\n' +
-            'var i = i + 1;';
+  var str = '#include <bits/stdc++.h>\nusing namespace std; int main() {int n;cin>>n;cout<<n*n + 1 << endl;return 0;}';
 
   var io = socketIO(server);
   io.on('connection', function(socket) {
