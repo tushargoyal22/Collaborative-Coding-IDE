@@ -39,7 +39,7 @@
           <video autoplay id="second-video"></video>
           <video autoplay id="my-video" muted="true"></video>
             <div>
-            	 <span id="Turn-off"><input id="room-input" class="room-input" placeholder="Enter Token-number">
+            	 <span id="Turn-off">
                 <button onclick="createRoom()">Start Video</button>
                 <button onclick="joinRoom()">Join Video</button></span>
                 <button id="voice-btn" onclick="voice_toggle()">MUTE</button>
@@ -136,7 +136,8 @@ var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || nav
 var local_stream;
 function createRoom(){
     console.log("Creating Room")
-    let room = document.getElementById("room-input").value;
+    var k = window.location.href;
+    let room = k.slice(k.length-4, k.length);
     if(room == " " || room == "")   {
         alert("Please enter room number")
         return;
@@ -192,7 +193,8 @@ function notify(msg){
 */
 function joinRoom(){
     console.log("Joining Room")
-    let room = document.getElementById("room-input").value;
+    var k = window.location.href;
+    let room = k.slice(k.length-4, k.length);
     if(room == " " || room == "")   {
         alert("Please enter room number")
         return;
@@ -225,6 +227,8 @@ function  voice_toggle(){
         document.getElementById("voice-btn").innerHTML="MUTE";
     }
     local_stream.getAudioTracks()[0].enabled = !(local_stream.getAudioTracks()[0].enabled);
+    var k = window.location.href;
+    console.log(k.slice(k.length-4, k.length));
     
 }
 function  video_toggle(){
