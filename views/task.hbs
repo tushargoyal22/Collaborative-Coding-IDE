@@ -38,6 +38,13 @@
         <div id="video-container">
           <video autoplay id="second-video"></video>
           <video autoplay id="my-video" muted="true"></video>
+            <div>
+            	 <span id="Turn-off">
+                <button onclick="createRoom()">Start Video</button>
+                <button onclick="joinRoom()">Join Video</button></span>
+                <button id="voice-btn" onclick="voice_toggle()">MUTE</button>
+                <button id="video-btn" onclick="video_toggle()">Video Toggle</button>
+            </div>
           <div id="step2">
             <p>Your ID: <span id="my-id">...</span></p>
             <div class="form-inline">
@@ -71,6 +78,7 @@
     </div>
   </div>
 </div>
+
 <input type="hidden" value="{{roomId}}" id="roomId"/>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.js"></script>
@@ -78,18 +86,16 @@
 
 <script src="/plugins/ot/ot.js"></script>
 <script src="/socket.io/socket.io.js"></script>
-
+<script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
 <script>
   var EditorClient = ot.EditorClient;
   var SocketIOAdapter = ot.SocketIOAdapter;
   var CodeMirrorAdapter = ot.CodeMirrorAdapter;
-
   var socket = io.connect('http://localhost:3000');
   var editor = CodeMirror.fromTextArea(document.getElementById("code-screen"), {
     lineNumbers: true,
     theme: "monokai"
   });
-
   var cmClient;
   function init(str, revision, clients, serverAdapter) {
     editor.setValue(str);
@@ -97,21 +103,17 @@
       revision, clients, serverAdapter, new CodeMirrorAdapter(editor)
     );
   };
-
   socket.on('doc', function(obj) {
     init(obj.str, obj.revision, obj.clients, new SocketIOAdapter(socket));
   });
-
   var username = $("#chatbox-username").val();
   if(username === "") {
     var userId = Math.floor(Math.random() * 9999).toString();
     username = "User" + userId;
     $("#chatbox-username").text(username);
   };
-
   var roomId = $('#roomId').val();
   socket.emit('joinRoom', {room: roomId, username: username});
-
   var userMessage = function(name, text) {
     return ('<li class="media"> <div class="media-body"> <div class="media">' +
       '<div class="media-body"' +
@@ -119,15 +121,118 @@
       '<hr/> </div></div></div></li>'
     );
   };
-
   var sendMessage = function() {
     var userMessage = $('#userMessage').val();
     socket.emit('chatMessage', {message: userMessage, username: username});
     $('#userMessage').val("");
   };
-
   socket.on('chatMessage', function(data) {
     $('#chatbox-listMessages').append(userMessage(data.username, data.message));
   });
+  const PRE = "DELTA"
+const SUF = "MEET"
+var room_id;
+var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+var local_stream;
+function createRoom(){
+    console.log("Creating Room")
+    var k = window.location.href;
+    let room = k.slice(k.length-4, k.length);
+    if(room == " " || room == "")   {
+        alert("Please enter room number")
+        return;
+    }
+    room_id = PRE+room+SUF;
+    let peer = new Peer(room_id)
+    peer.on('open', (id)=>{
+        console.log("Peer Connected with ID: ", id)
+        //hideModal()
+        document.getElementById("Turn-off").hidden = true;
+        getUserMedia({video: true, audio: true}, (stream)=>{
+            local_stream = stream;
+            setLocalStream(local_stream)
+        },(err)=>{
+            console.log(err)
+        })
+        //notify("Waiting for peer to join.")
+    })
+    peer.on('call',(call)=>{
+        call.answer(local_stream);
+        call.on('stream',(stream)=>{
+            setRemoteStream(stream)
+        })
+    })
+}
 
+function setLocalStream(stream){
+    
+    let video = document.getElementById("my-video");
+    video.srcObject = stream;
+    video.muted = true;
+    video.play();
+}
+function setRemoteStream(stream){
+   
+    let video = document.getElementById("second-video");
+    video.srcObject = stream;
+    video.play();
+}
+/*
+function hideModal(){
+    document.getElementById("entry-modal").hidden = true
+}
+
+function notify(msg){
+    let notification = document.getElementById("notification")
+    notification.innerHTML = msg
+    notification.hidden = false
+    setTimeout(()=>{
+        notification.hidden = true;
+    }, 3000)
+}
+*/
+function joinRoom(){
+    console.log("Joining Room")
+    var k = window.location.href;
+    let room = k.slice(k.length-4, k.length);
+    if(room == " " || room == "")   {
+        alert("Please enter room number")
+        return;
+    }
+    room_id = PRE+room+SUF;
+    //hideModal()
+    document.getElementById("Turn-off").hidden = true;
+    let peer = new Peer()
+    peer.on('open', (id)=>{
+        console.log("Connected with Id: "+id)
+        getUserMedia({video: true, audio: true}, (stream)=>{
+            local_stream = stream;
+            setLocalStream(local_stream)
+            //notify("Joining peer")
+            let call = peer.call(room_id, stream)
+            call.on('stream', (stream)=>{
+                setRemoteStream(stream);
+            })
+        }, (err)=>{
+            console.log(err)
+        })
+
+    })
+}
+function  voice_toggle(){
+    if (document.getElementById("voice-btn").innerHTML=="MUTE") {
+        document.getElementById("voice-btn").innerHTML="UNMUTE";
+        
+    } else {
+        document.getElementById("voice-btn").innerHTML="MUTE";
+    }
+    local_stream.getAudioTracks()[0].enabled = !(local_stream.getAudioTracks()[0].enabled);
+    var k = window.location.href;
+    console.log(k.slice(k.length-4, k.length));
+    
+}
+function  video_toggle(){
+
+    local_stream.getVideoTracks()[0].enabled = !(local_stream.getVideoTracks()[0].enabled);
+}
 </script>
